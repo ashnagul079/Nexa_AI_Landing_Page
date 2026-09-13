@@ -8,7 +8,7 @@ A modern, responsive landing page designed and developed for **Nexa**, a concept
 
 ## 📸 Preview
 
-![Landing Page Screenshot](Nexa_AI_Landing_PageScreenshot.png)
+![Landing Page Screenshot](screenshot.png)
 
 ---
 
