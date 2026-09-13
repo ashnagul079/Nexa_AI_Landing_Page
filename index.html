@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexa — Your AI research & writing copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #0B0F1A;
+    --surface: #131A2B;
+    --surface-2: #1B2438;
+    --paper: #EDEFF4;
+    --muted: #8993AC;
+    --wire: #2A3450;
+    --signal: #5EE0C1;
+    --signal-dim: rgba(94,224,193,0.14);
+    --amber: #F5A65B;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Space Grotesk', sans-serif;
+    letter-spacing:-0.02em;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,15,26,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--wire);
+  }
+  nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem;
+  }
+  .logo-mark{
+    width:28px; height:28px; border-radius:8px;
+    background:linear-gradient(135deg, var(--signal), var(--amber));
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.85rem; color:var(--ink); font-weight:700;
+  }
+  .navlinks{ display:flex; gap:36px; font-size:0.92rem; color:var(--muted); }
+  .navlinks a:hover{ color:var(--paper); }
+  .nav-cta{
+    padding:10px 20px; border-radius:8px;
+    background:var(--paper); color:var(--ink); font-weight:600; font-size:0.9rem;
+  }
+  @media (max-width:820px){ .navlinks{ display:none; } }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:96px 0 80px;
+    position:relative;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap:64px;
+    align-items:center;
+  }
+  @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--signal); font-size:0.85rem; font-weight:500;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:''; width:6px; height:6px; border-radius:50%;
+    background:var(--signal); box-shadow:0 0 12px var(--signal);
+  }
+
+  .hero h1{
+    font-size:clamp(2.4rem, 5vw, 3.6rem);
+    font-weight:600;
+    line-height:1.08;
+    max-width:14ch;
+  }
+
+  .hero p.sub{
+    margin-top:24px;
+    color:var(--muted);
+    font-size:1.08rem;
+    max-width:46ch;
+  }
+
+  .hero-actions{ margin-top:36px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .btn-primary{
+    background:var(--signal); color:var(--ink); font-weight:600;
+    padding:14px 26px; border-radius:9px; font-size:0.95rem;
+    box-shadow:0 0 0 0 rgba(94,224,193,0.4);
+    transition:box-shadow .25s ease, transform .25s ease;
+  }
+  .btn-primary:hover{ box-shadow:0 0 24px rgba(94,224,193,0.35); transform:translateY(-1px); }
+  .btn-ghost{
+    color:var(--paper); font-size:0.95rem; font-weight:500;
+    border-bottom:1px solid var(--wire); padding-bottom:2px;
+  }
+
+  .hero-note{ margin-top:28px; font-size:0.82rem; color:var(--muted); }
+
+  /* ---------- HERO VISUAL: terminal-ish workflow card ---------- */
+  .hero-visual{
+    background:var(--surface);
+    border:1px solid var(--wire);
+    border-radius:16px;
+    padding:22px;
+    position:relative;
+  }
+  .hv-head{
+    display:flex; gap:6px; margin-bottom:18px;
+  }
+  .hv-dot{ width:9px; height:9px; border-radius:50%; background:var(--wire); }
+
+  .hv-line{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px; border-radius:9px;
+    background:var(--surface-2);
+    margin-bottom:10px;
+    font-size:0.85rem;
+  }
+  .hv-line .tag{
+    font-size:0.68rem; padding:3px 8px; border-radius:5px;
+    background:var(--signal-dim); color:var(--signal); font-weight:600;
+    white-space:nowrap;
+  }
+  .hv-line.pending .tag{ background:rgba(245,166,91,0.14); color:var(--amber); }
+  .hv-line span.txt{ color:var(--paper); opacity:0.9; }
+  .hv-progress{
+    margin-top:16px; height:6px; border-radius:6px; background:var(--surface-2); overflow:hidden;
+  }
+  .hv-progress-fill{
+    height:100%; width:0%; border-radius:6px;
+    background:linear-gradient(90deg, var(--signal), var(--amber));
+    animation: fillbar 2.4s ease forwards 0.5s;
+  }
+  @keyframes fillbar{ to{ width:78%; } }
+  .hv-foot{ margin-top:14px; display:flex; justify-content:space-between; font-size:0.78rem; color:var(--muted); }
+
+  /* ---------- LOGOS / TRUST STRIP ---------- */
+  .trust{ padding:36px 0; border-top:1px solid var(--wire); border-bottom:1px solid var(--wire); }
+  .trust .wrap{
+    display:flex; align-items:center; gap:40px; flex-wrap:wrap;
+    color:var(--muted); font-size:0.85rem;
+  }
+  .trust strong{ color:var(--paper); font-weight:600; }
+
+  /* ---------- SECTION HEADER ---------- */
+  .section{ padding:96px 0; }
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head h2{ font-size:clamp(1.8rem,3.4vw,2.5rem); font-weight:600; }
+  .section-head p{ color:var(--muted); margin-top:16px; font-size:1.02rem; }
+
+  /* ---------- FEATURES: asymmetric row layout, not identical cards ---------- */
+  .feature-row{
+    display:grid; grid-template-columns: 0.55fr 1fr;
+    gap:48px; padding:40px 0; border-top:1px solid var(--wire);
+    align-items:center;
+  }
+  .feature-row:last-child{ border-bottom:1px solid var(--wire); }
+  @media (max-width:800px){ .feature-row{ grid-template-columns:1fr; gap:20px; } }
+
+  .feature-num{
+    font-family:'Space Grotesk'; font-size:0.85rem; color:var(--signal);
+    display:flex; align-items:center; gap:14px;
+  }
+  .feature-num .line{ flex:1; height:1px; background:var(--wire); }
+
+  .feature-copy h3{ font-size:1.4rem; font-weight:600; margin-bottom:10px; }
+  .feature-copy p{ color:var(--muted); max-width:56ch; }
+
+  .feature-visual{
+    display:flex; flex-direction:column; gap:8px;
+  }
+
+  /* mini components reused per feature */
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{ background:var(--surface); border:1px solid var(--wire); padding:8px 14px; border-radius:20px; font-size:0.82rem; color:var(--muted); }
+  .chip.active{ border-color:var(--signal); color:var(--signal); background:var(--signal-dim); }
+
+  .doc-card{ background:var(--surface); border:1px solid var(--wire); border-radius:12px; padding:18px; }
+  .doc-card .row{ display:flex; justify-content:space-between; font-size:0.82rem; color:var(--muted); padding:8px 0; border-bottom:1px solid var(--surface-2); }
+  .doc-card .row:last-child{ border-bottom:none; }
+  .doc-card .row b{ color:var(--paper); font-weight:500; }
+
+  .bar-card{ background:var(--surface); border:1px solid var(--wire); border-radius:12px; padding:20px; display:flex; align-items:flex-end; gap:10px; height:110px; }
+  .bar{ flex:1; background:linear-gradient(180deg, var(--signal), var(--surface-2)); border-radius:4px 4px 0 0; opacity:0.85; }
+
+  /* ---------- HOW IT WORKS (real sequence -> numbers justified) ---------- */
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--wire); border:1px solid var(--wire); border-radius:14px; overflow:hidden; }
+  @media (max-width:800px){ .steps{ grid-template-columns:1fr; } }
+  .step{ background:var(--ink); padding:32px 28px; }
+  .step .k{ font-family:'Space Grotesk'; font-size:0.85rem; color:var(--muted); }
+  .step h4{ margin-top:14px; font-size:1.12rem; font-weight:600; }
+  .step p{ margin-top:10px; color:var(--muted); font-size:0.92rem; }
+
+  /* ---------- TESTIMONIAL ---------- */
+  .testimonial{
+    background:var(--surface); border:1px solid var(--wire); border-radius:18px;
+    padding:56px; display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center;
+  }
+  @media (max-width:700px){ .testimonial{ grid-template-columns:1fr; padding:32px; } }
+  .avatar{ width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--amber),var(--signal)); flex-shrink:0; }
+  .testimonial p.quote{ font-size:1.2rem; font-family:'Space Grotesk'; font-weight:500; line-height:1.5; }
+  .testimonial .who{ margin-top:18px; color:var(--muted); font-size:0.88rem; }
+
+  /* ---------- PRICING ---------- */
+  .pricing{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  @media (max-width:820px){ .pricing{ grid-template-columns:1fr; } }
+  .price-card{ border:1px solid var(--wire); border-radius:14px; padding:32px; background:var(--surface); }
+  .price-card.highlight{ border-color:var(--signal); background:linear-gradient(180deg, var(--signal-dim), var(--surface)); position:relative; }
+  .price-card .plan{ font-size:0.95rem; color:var(--muted); }
+  .price-card .amount{ font-family:'Space Grotesk'; font-size:2.2rem; font-weight:600; margin-top:8px; }
+  .price-card .amount span{ font-size:0.95rem; color:var(--muted); font-weight:400; }
+  .price-card ul{ list-style:none; margin-top:24px; display:flex; flex-direction:column; gap:12px; }
+  .price-card li{ font-size:0.9rem; color:var(--muted); padding-left:20px; position:relative; }
+  .price-card li::before{ content:'—'; position:absolute; left:0; color:var(--signal); }
+  .price-card .btn-primary, .price-card .btn-outline{ display:block; text-align:center; margin-top:28px; }
+  .btn-outline{ border:1px solid var(--wire); padding:13px 26px; border-radius:9px; font-size:0.9rem; font-weight:500; }
+
+  /* ---------- CTA ---------- */
+  .cta-band{
+    text-align:left; background:var(--surface); border:1px solid var(--wire);
+    border-radius:20px; padding:64px; display:flex; justify-content:space-between; align-items:center; gap:32px;
+  }
+  @media (max-width:720px){ .cta-band{ flex-direction:column; align-items:flex-start; padding:40px 28px; } }
+  .cta-band h3{ font-size:1.8rem; font-weight:600; max-width:14ch; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ border-top:1px solid var(--wire); padding:48px 0; }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  footer .fmuted{ color:var(--muted); font-size:0.85rem; }
+  .foot-links{ display:flex; gap:24px; }
+  .foot-links a{ color:var(--muted); font-size:0.85rem; }
+  .foot-links a:hover{ color:var(--paper); }
+
+  ::selection{ background:var(--signal-dim); color:var(--signal); }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--signal); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="logo-mark">N</span>Nexa</div>
+    <div class="navlinks">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <a href="#pricing" class="nav-cta">Start free</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Now reading PDFs, sheets & source code</div>
+      <h1>Turn a pile of research into a finished draft, in one sitting.</h1>
+      <p class="sub">Nexa reads what you give it — papers, spreadsheets, meeting notes — and hands back a structured, cited first draft. Built for students and analysts who are tired of starting from a blank page.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn-primary">Start free</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-note">No credit card. 20 documents free every month.</div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hv-head"><div class="hv-dot"></div><div class="hv-dot"></div><div class="hv-dot"></div></div>
+      <div class="hv-line"><span class="tag">done</span><span class="txt">Scanned 14 sources on renewable subsidies</span></div>
+      <div class="hv-line"><span class="tag">done</span><span class="txt">Pulled figures into a comparison table</span></div>
+      <div class="hv-line pending"><span class="tag">writing</span><span class="txt">Drafting section 2 of 4 — Methodology</span></div>
+      <div class="hv-progress"><div class="hv-progress-fill"></div></div>
+      <div class="hv-foot"><span>Report_Draft.docx</span><span>~2 min left</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="trust">
+  <div class="wrap">
+    <span><strong>4,200+</strong> drafts generated this month</span>
+    <span><strong>Used across</strong> 30 university programs</span>
+    <span><strong>Average</strong> 6 hrs saved per report</span>
+  </div>
+</div>
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Everything between "I have the sources" and "it's due tomorrow."</h2>
+      <p>Nexa doesn't write blind. It grounds every claim in what you fed it, so the draft you get back is something you can actually hand in.</p>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-num">01<div class="line"></div></div>
+      <div class="feature-copy">
+        <h3>Feed it anything you've already collected</h3>
+        <p>Drop in PDFs, CSVs, Google Docs links, or a folder of screenshots. Nexa reads the content, not just the file name, and flags anything it couldn't parse.</p>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-num">02<div class="line"></div></div>
+      <div class="feature-copy">
+        <h3>Watch it organize before it writes</h3>
+        <p>Before drafting a word, Nexa shows you the outline it plans to follow, so you can reorder sections or cut a point that doesn't belong.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="chip-row">
+          <div class="chip active">1. Background</div>
+          <div class="chip">2. Methodology</div>
+          <div class="chip">3. Findings</div>
+          <div class="chip">4. Recommendation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-num">03<div class="line"></div></div>
+      <div class="feature-copy">
+        <h3>Every claim traces back to a source</h3>
+        <p>Hover any sentence in the draft and see exactly which document it came from — no invented statistics, no unlabeled opinions.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="doc-card">
+          <div class="row"><span>Solar adoption rate, 2025</span><b>survey_data.csv</b></div>
+          <div class="row"><span>Policy quote, para 3</span><b>subsidy_report.pdf</b></div>
+          <div class="row"><span>Cost comparison table</span><b>notes_meeting.docx</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-num">04<div class="line"></div></div>
+      <div class="feature-copy">
+        <h3>Numbers become charts automatically</h3>
+        <p>Any dataset you attach is scanned for a chartable trend and rendered inline, ready to drop into a slide or appendix.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="bar-card">
+          <div class="bar" style="height:40%"></div>
+          <div class="bar" style="height:65%"></div>
+          <div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:85%"></div>
+          <div class="bar" style="height:70%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Three steps, start to draft.</h2>
+      <p>No workflow to learn — upload, review the outline, download.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="k">Step 1</div>
+        <h4>Upload your sources</h4>
+        <p>Papers, spreadsheets, transcripts — Nexa sorts what's usable and tells you what's missing.</p>
+      </div>
+      <div class="step">
+        <div class="k">Step 2</div>
+        <h4>Approve the outline</h4>
+        <p>See the structure before a single paragraph is written, and adjust it in one click.</p>
+      </div>
+      <div class="step">
+        <div class="k">Step 3</div>
+        <h4>Export a cited draft</h4>
+        <p>Get a Word or Google Doc file with sources footnoted, ready for your own edit pass.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="testimonial">
+      <div class="avatar"></div>
+      <div>
+        <p class="quote">"I used to lose a full evening just organizing my sources before I could even start writing. Now that part takes ten minutes."</p>
+        <div class="who">Hina Aslam — Final year, Computer Science, NUST</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Straightforward pricing.</h2>
+      <p>Start free, upgrade only once your workload actually needs it.</p>
+    </div>
+    <div class="pricing">
+      <div class="price-card">
+        <div class="plan">Student</div>
+        <div class="amount">Free</div>
+        <ul>
+          <li>20 documents / month</li>
+          <li>1 draft export per document</li>
+          <li>Standard processing speed</li>
+        </ul>
+        <a href="#" class="btn-outline">Start free</a>
+      </div>
+      <div class="price-card highlight">
+        <div class="plan">Individual</div>
+        <div class="amount">$9<span>/month</span></div>
+        <ul>
+          <li>Unlimited documents</li>
+          <li>Priority processing</li>
+          <li>Chart & table generation</li>
+          <li>Citation export to Word & Docs</li>
+        </ul>
+        <a href="#" class="btn-primary">Start free trial</a>
+      </div>
+      <div class="price-card">
+        <div class="plan">Team</div>
+        <div class="amount">$29<span>/month</span></div>
+        <ul>
+          <li>Everything in Individual</li>
+          <li>Shared source libraries</li>
+          <li>5 seats included</li>
+        </ul>
+        <a href="#" class="btn-outline">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band">
+      <h3>Your next report starts with an upload, not a blank page.</h3>
+      <a href="#pricing" class="btn-primary">Start free</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fmuted">© 2026 Nexa. Built for people who'd rather think than format.</div>
+    <div class="foot-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
